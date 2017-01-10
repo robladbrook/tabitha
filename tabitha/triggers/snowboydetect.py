@@ -13,7 +13,7 @@ if version_info >= (2, 6, 0):
         fp = None
         try:
             resources_dir = os.path.join(os.path.dirname(__file__),
-                                         '../../resources/snowboy/')
+                                         '../../resources/snowboy/osx/')
             search_paths = [os.path.dirname(__file__), resources_dir]
             fp, pathname, description = imp.find_module('_snowboydetect', search_paths)
         except ImportError:

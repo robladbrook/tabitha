@@ -16,7 +16,7 @@ class VadSilenceDetector(object):
 
         self._config = ObjectDict({
             'frame_ms': config.get('break.vad.frame_ms', 30),
-            'silence_ms': config.get('break.vad.silence_ms', 200),
+            'silence_ms': config.get('break.vad.silence_ms', 400),
             'sample_rate': config.get('audio.sample_rate', 16000),
             'audio_width': config.get('audio.width', 2)})
 
@@ -31,7 +31,7 @@ class VadSilenceDetector(object):
 
         self._vad = webrtcvad.Vad(aggressiveness_mode)
 
-        logging.debug('__init__ with: ' + config)
+        logging.debug('__init__ with: %s', config)
 
     def reset(self):
         """ resets the stream buffer """

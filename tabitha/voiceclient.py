@@ -1,9 +1,11 @@
 """ Tabitha main client class """
 
 import time
+import tempfile
+import os
 from tabitha.objectdict import ObjectDict
 from tabitha.sources.pyaudiosource import PyAudioSource
-from tabitha.outputs.pyaudiooutput import PyAudioOutput
+from tabitha.outputs.vlcoutput import VlcOutput
 from tabitha.breakdetectors.vadsilence import VadSilenceDetector
 from tabitha.triggers.snowboy import SnowboyTriggerDetector
 
@@ -11,30 +13,33 @@ from tabitha.triggers.snowboy import SnowboyTriggerDetector
 class VoiceClient(object):
     """ Listens to audio input and execs triggers based vocal commands """
 
-    def __init__(self, config, handle_interrupts=True):
-        self.interrupted = False
+    # pylint: disable=too-many-instance-attributes
+
+    def __init__(self, config=None):
+        config = config or {}
         self.is_listening = False
         self._source = PyAudioSource(config)
         self._break_detector = VadSilenceDetector(config)
         self._trigger_detector = SnowboyTriggerDetector(config)
-        self._output = PyAudioOutput(config)
+        self._output = VlcOutput(config)
+        self._current_context = ObjectDict({
+            'capture': None,
+            'response': None})
 
         self._config = ObjectDict({
-            'triggers': {}
+            'triggers': {},
+            'sleep_time': config.get('listen_sleep_time', 0.2)
             })
-
-        if handle_interrupts:
-            import signal
-            # capture SIGINT signal, e.g., Ctrl+C
-            signal.signal(signal.SIGINT, self._interrupt_handler)
 
     def listen(self):
         """ starts processing the audio source """
         self._source.start()
         self.is_listening = True
 
-    def _interrupt_handler(self, dummy_signal, dummy_frame):
-        self.interrupted = True
+    def terminate(self):
+        """ shuts down the client """
+        self.is_listening = False
+        self._source.stop()
 
     def wait_for_hotword(self, watchfor=None):
         """ alias for wait_for_trigger """
@@ -52,8 +57,8 @@ class VoiceClient(object):
             watchfor = [watchfor]
 
         while True:
-            if self.interrupted:
-                break
+            if not self.is_listening:
+                return None
 
             data = self._source.buffer.get_snapshot_data()
 
@@ -66,9 +71,11 @@ class VoiceClient(object):
             if not trigger_result:
                 continue
 
-            if (trigger_result in self._config.triggers and
-                    (not watchfor or trigger_result in watchfor)):
-                return self._config.triggers[trigger_result]
+            # if (trigger_result in self._config.triggers and
+            #        (not watchfor or trigger_result in watchfor)):
+            #    return self._config.triggers[trigger_result]
+
+            return trigger_result
 
     def capture_until_break(self):
         """ blocks and captures audio until a break is detected """
@@ -80,8 +87,8 @@ class VoiceClient(object):
         self._break_detector.reset()
 
         while self._source.buffer.is_capturing:
-            if self.interrupted:
-                break
+            if not self.is_listening:
+                return None
 
             data = self._source.buffer.get_snapshot_data()
 
@@ -93,15 +100,44 @@ class VoiceClient(object):
                 self._source.buffer.stop_capture()
                 break
 
-        return self._source.buffer.get_capture_data()
+        audio_data = self._source.buffer.get_capture_data()
+        self._current_context.capture = audio_data
 
-    def ask(self, handler, audio_data):
+        return audio_data
+
+    def ask(self, handler, audio_data=None):
         """ sends the audio data to the handler and waits for response """
-        pass
+        if not audio_data:
+            audio_data = self._current_context.capture
 
-    def play(self, audio_response, stop_on=None):
+        response = handler.ask(audio_data)
+        self._current_context.response = response
+
+        return response
+
+    def respond_to(self, handler, audio_data=None, response_context=None):
+        """ sends the audio data to the handler and waits for response """
+        if not audio_data:
+            audio_data = self._current_context.capture
+
+        if not response_context:
+            response_context = self._current_context.response
+
+        response = handler.respond_to(audio_data, response_context)
+        self._current_context.response = response
+
+        return response
+
+    def play(self, audio_response, dummy_stop_on=None):
         """ plays the audio response """
-        self._output.play(audio_response)
+
+        temp_file = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+
+        with temp_file:
+            temp_file.write(audio_response.audio_data)
+
+        self._output.blocking_play(temp_file.name)
+        os.remove(temp_file.name)
 
         # wait for trigger in another thread
         # first one to return (trigger or play)

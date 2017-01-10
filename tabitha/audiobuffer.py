@@ -36,7 +36,7 @@ class AudioBuffer(object):
     def get_snapshot_data(self):
         """ returns a small snapshot of the most recent audio data """
 
-        tmp = self._snapshot_buffer
+        tmp = bytes(bytearray(self._snapshot_buffer))
         self._snapshot_buffer.clear()
         return tmp
 
@@ -54,7 +54,7 @@ class AudioBuffer(object):
     def get_capture_data(self):
         """ returns the captured audio data """
 
-        return self._capture_buffer
+        return bytes(bytearray(self._capture_buffer))
 
     def _check_if_capture_complete(self):
         if len(self._capture_buffer) == self._capture_buffer.maxlen:

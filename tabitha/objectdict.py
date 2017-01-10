@@ -8,7 +8,7 @@ class ObjectDict(dict):
         if name in self:
             return self[name]
         else:
-            raise AttributeError("No such attribute: " + name)
+            raise AttributeError('No such attribute: %s' % name)
 
     def __setattr__(self, name, value):
         self[name] = value
@@ -17,4 +17,4 @@ class ObjectDict(dict):
         if name in self:
             del self[name]
         else:
-            raise AttributeError("No such attribute: " + name)
+            raise AttributeError('No such attribute: %s' % name)

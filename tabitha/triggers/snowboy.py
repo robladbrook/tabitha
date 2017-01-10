@@ -13,12 +13,12 @@ class SnowboyTriggerDetector(object):
         top_dir = os.path.dirname(os.path.abspath(__file__))
         resources_dir = os.path.join(top_dir, '../../resources/snowboy/')
         resource_file = os.path.join(resources_dir, 'common.res')
-        model_file = os.path.join(resources_dir, 'tabitha.pmdl')
+        model_file = os.path.join(resources_dir, 'alexa.umdl')
 
         resource = config.get('trigger.snowboy.commonres', resource_file)
         model = config.get('trigger.snowboy.model', model_file)
         audio_gain = config.get('trigger.snowboy.audio_gain', 1)
-        sensitivity = config.get('trigger.snowboy.sensitivity', 0.5)
+        sensitivity = config.get('trigger.snowboy.sensitivity', '0.5')
 
         self._detector = SnowboyDetect(
             resource_filename=resource.encode(), model_str=model.encode())
@@ -32,7 +32,7 @@ class SnowboyTriggerDetector(object):
 
         config_sample_rate = config.get('audio.sample_rate', 16000)
         config_channels = config.get('audio.channels', 1)
-        config_bits_per_sample = config.get('audio.bits_per_sample', 8)
+        config_bits_per_sample = config.get('audio.bits_per_sample', 16)
 
         snowboy_sample_rate = self._detector.SampleRate()
         snowboy_channels = self._detector.NumChannels()
