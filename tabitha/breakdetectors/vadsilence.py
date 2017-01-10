@@ -1,6 +1,9 @@
 """ VadSilenceDetector takes a constant stream of audio data
     and waits for the stream to have a run of vocal silence """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 import logging
 import webrtcvad
 from tabitha.objectdict import ObjectDict
@@ -22,12 +25,14 @@ class VadSilenceDetector(object):
 
         self._dropped_bytes = 0
         self._silence_run_ms = 0
-        self._data = ''
+        self._data = b''
 
-        self._frame_bytes = (self._config.audio_width * self._config.frame_ms *
-                             self._config.sample_rate / 1000)
-        self._drop_start_bytes = (self._config.audio_width * drop_start_ms *
-                                  self._config.sample_rate / 1000)
+        self._frame_bytes = int(self._config.audio_width *
+                                self._config.frame_ms *
+                                self._config.sample_rate / 1000)
+        self._drop_start_bytes = int(self._config.audio_width *
+                                     drop_start_ms *
+                                     self._config.sample_rate / 1000)
 
         self._vad = webrtcvad.Vad(aggressiveness_mode)
 
@@ -38,7 +43,7 @@ class VadSilenceDetector(object):
 
         self._silence_run_ms = 0
         self._dropped_bytes = 0
-        self._data = ''
+        self._data = b''
         logging.debug('reset()')
 
     def is_break(self, data):

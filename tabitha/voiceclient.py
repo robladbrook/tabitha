@@ -1,5 +1,7 @@
 """ Tabitha main client class """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import time
 import tempfile
 import os
@@ -18,10 +20,11 @@ class VoiceClient(object):
     def __init__(self, config=None):
         config = config or {}
         self.is_listening = False
-        self._source = PyAudioSource(config)
-        self._break_detector = VadSilenceDetector(config)
-        self._trigger_detector = SnowboyTriggerDetector(config)
-        self._output = VlcOutput(config)
+        self._source = config.get('source', PyAudioSource(config))
+        self._break_detector = config.get('break', VadSilenceDetector(config))
+        self._trigger_detector = config.get(
+            'trigger', SnowboyTriggerDetector(config))
+        self._output = config.get('output', VlcOutput(config))
         self._current_context = ObjectDict({
             'capture': None,
             'response': None})
@@ -53,7 +56,7 @@ class VoiceClient(object):
 
         watchfor = watchfor or []
 
-        if isinstance(watchfor, basestring):
+        if not isinstance(watchfor, list):
             watchfor = [watchfor]
 
         while True:

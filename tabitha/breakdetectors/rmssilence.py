@@ -1,6 +1,9 @@
 """ RMSSilenceDetector takes a constant stream of audio data
     and waits for the stream to have a run of audio below a threshold """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 import logging
 import audioop
 from tabitha.objectdict import ObjectDict

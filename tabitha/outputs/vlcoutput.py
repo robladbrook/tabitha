@@ -1,5 +1,7 @@
 """ allows playing of audio media files via the VLC command line """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import subprocess
 import threading

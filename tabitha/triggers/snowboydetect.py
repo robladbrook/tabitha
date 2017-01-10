@@ -4,6 +4,8 @@
 # Do not make changes to this file unless you know what you are doing--modify
 # the SWIG interface file instead.
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from sys import version_info
 if version_info >= (2, 6, 0):

@@ -1,5 +1,7 @@
 """ uses Snowboy to detect hotword triggers """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os.path
 from tabitha.triggers.snowboydetect import SnowboyDetect
 
@@ -21,9 +23,10 @@ class SnowboyTriggerDetector(object):
         sensitivity = config.get('trigger.snowboy.sensitivity', '0.5')
 
         self._detector = SnowboyDetect(
-            resource_filename=resource.encode(), model_str=model.encode())
+            resource_filename=resource.encode('ascii', 'ignore'),
+            model_str=model.encode('ascii', 'ignore'))
         self._detector.SetAudioGain(audio_gain)
-        self._detector.SetSensitivity(sensitivity)
+        self._detector.SetSensitivity(sensitivity.encode('ascii', 'ignore'))
 
         self.validate_audio_config(config)
 

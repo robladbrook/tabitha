@@ -1,5 +1,7 @@
 """ provides a source of audio data using pyaudio """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import pyaudio
 from tabitha.objectdict import ObjectDict
 
